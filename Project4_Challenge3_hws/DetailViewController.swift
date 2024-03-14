@@ -6,24 +6,43 @@
 //
 
 import UIKit
+import WebKit
 
-class DetailViewController: UIViewController {
-
+class DetailViewController: UIViewController, WKNavigationDelegate {
+    
+    var selectedWebsite: String?
+    var webView: WKWebView!
+    var websites = ["pg-lang.com", "apple.com", "hstyles.co.uk", "radiohead"]
+    
+    override func loadView() {
+        webView = WKWebView()
+        webView.navigationDelegate = self
+        view = webView
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        
+        let url = URL(string: "https://" + selectedWebsite!)!
+        webView.load(URLRequest(url:url))
+        webView.allowsBackForwardNavigationGestures = true
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        title = webView.title
     }
-    */
-
+    
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        
+        let url = navigationAction.request.url
+        
+        if let host = url?.host {
+            for website in websites {
+                if host.contains(website) {
+                    decisionHandler(.allow)
+                    return
+                }
+            }
+        }
+        decisionHandler(.cancel)
+    }
 }
